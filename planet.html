@@ -1,85 +1,155 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset = "utf-8">
-    <title>網站標題</title>
-    <link rel="icon" href="icon.png">
-  </head>
-  <body>
-      hello cindy
-  </body>
-</html>
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>小說投稿網站</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px; }
-    .container { max-width: 700px; margin:auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
-    h1 { text-align:center; }
-    label { display:block; margin-top:12px; font-weight:bold; }
-    input, textarea { width:100%; padding:8px; margin-top:6px; }
-    textarea { min-height:150px; }
-    button { margin-top:15px; padding:10px 16px; border:none; border-radius:6px; cursor:pointer; }
-    .submit { background:#4CAF50; color:#fff; }
-    .edit { background:#2196F3; color:#fff; }
-    .novel { margin-top:30px; padding:15px; border:1px solid #ddd; border-radius:6px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+    }
+    textarea { height: 150px; }
+    button {
+      padding: 8px 14px;
+      margin-right: 5px;
+      cursor: pointer;
+    }
+    .novel {
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+      margin-top: 15px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>小說投稿</h1>
 
-    <label>小說標題</label>
-    <input type="text" id="titleInput" placeholder="請輸入小說標題" />
+<div class="container">
+  <h1>小說投稿網站</h1>
 
-    <label>小說內容</label>
-    <textarea id="contentInput" placeholder="請輸入小說內容"></textarea>
+  <input id="title" placeholder="小說標題" />
+  <textarea id="content" placeholder="小說內容"></textarea>
 
-    <button class="submit" onclick="submitNovel()">投稿</button>
+  <button onclick="submitNovel()">投稿</button>
+  <button onclick="cancelEdit()" id="cancelBtn" style="display:none">取消編輯</button>
 
-    <div id="novelArea"></div>
-  </div>
+  <div id="list"></div>
+</div>
 
-  <script>
-    let isEditing = false;
+<script>
+  let novels = JSON.parse(localStorage.getItem('novels')) || [];
+  let editIndex = null;
 
-    function submitNovel() {
-      const title = document.getElementById('titleInput').value;
-      const content = document.getElementById('contentInput').value;
+  function save() {
+    localStorage.setItem('novels', JSON.stringify(novels));
+  }
 
-      if (!title || !content) {
-        alert('請填寫標題與內容');
-        return;
-      }
+  function submitNovel() {
+    const title = document.getElementById('title').value.trim();
+    const content = document.getElementById('content').value.trim();
 
-      const novelArea = document.getElementById('novelArea');
-      novelArea.innerHTML = `
-        <div class="novel">
-          <h2>${title}</h2>
-          <p>${content.replace(/\n/g, '<br>')}</p>
-          <button class="edit" onclick="editNovel()">編輯</button>
-        </div>
+    if (!title || !content) {
+      alert('請填寫標題與內容');
+      return;
+    }
+
+    if (editIndex === null) {
+      novels.unshift({
+        title,
+        content,
+        time: new Date().toLocaleString()
+      });
+    } else {
+      novels[editIndex].title = title;
+      novels[editIndex].content = content;
+      editIndex = null;
+      document.getElementById('cancelBtn').style.display = 'none';
+    }
+
+    document.getElementById('title').value = '';
+    document.getElementById('content').value = '';
+
+    save();
+    render();
+  }
+
+  function render() {
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+
+    novels.forEach((n, i) => {
+      const div = document.createElement('div');
+      div.className = 'novel';
+      div.innerHTML = `
+        <h3>${n.title}</h3>
+        <small>${n.time}</small>
+        <p>${n.content.replace(/\n/g, '<br>')}</p>
+        <button onclick="editNovel(${i})">編輯</button>
+        <button onclick="deleteNovel(${i})">刪除</button>
       `;
+      list.appendChild(div);
+    });
+  }
 
-      isEditing = false;
-    }
+  function editNovel(index) {
+    const n = novels[index];
+    document.getElementById('title').value = n.title;
+    document.getElementById('content').value = n.content;
+    editIndex = index;
+    document.getElementById('cancelBtn').style.display = 'inline-block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-    function editNovel() {
-      if (isEditing) return;
+  function cancelEdit() {
+    editIndex = null;
+    document.getElementById('title').value = '';
+    document.getElementById('content').value = '';
+    document.getElementById('cancelBtn').style.display = 'none';
+  }
 
-      const novel = document.querySelector('.novel');
-      const title = novel.querySelector('h2').innerText;
-      const content = novel.querySelector('p').innerText;
+  function deleteNovel(index) {
+    if (!confirm('確定刪除？')) return;
+    novels.splice(index, 1);
+    save();
+    render();
+  }
 
-      document.getElementById('titleInput').value = title;
-      document.getElementById('contentInput').value = content;
+  render();
+</script>
 
-      isEditing = true;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  </script>
 </body>
 </html>
+```
+
+---
+
+# 🎯 這份純前端最終版包含
+
+* ✔️ 小說投稿
+* ✔️ 多篇小說列表
+* ✔️ 小說編輯
+* ✔️ 小說刪除
+* ✔️ localStorage 永久保存（同一台電腦）
+
+---
+
+## 下一步（可選）
+
+* 美化版面
+* 搜尋小說
+* 匯出 / 匯入 JSON
+* 之後再升級成後端版本
+
+👉 這份已經是「**純前端能做到的完整版小說投稿網站
