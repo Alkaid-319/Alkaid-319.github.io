@@ -2,133 +2,140 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>小說投稿網站</title>
+  <title>小說投稿網站（章節排序＋夜間模式）</title>
   <style>
+    :root {
+      --bg: #f4f4f4;
+      --card: #ffffff;
+      --text: #111;
+      --muted: #666;
+      --border: #ddd;
+      --accent: #4f46e5;
+    }
+    body.dark {
+      --bg: #0f1220;
+      --card: #151936;
+      --text: #e8e9ff;
+      --muted: #b6b8ff;
+      --border: #2a2f6b;
+      --accent: #8b8cff;
+    }
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      background: var(--bg);
+      color: var(--text);
       padding: 20px;
+      transition: background .2s, color .2s;
     }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-    }
+    .container { max-width: 960px; margin: auto; background: var(--card); padding: 20px; border-radius: 10px; }
+    h1, h2, h3 { margin-top: 0; }
     input, textarea {
-      width: 100%;
-      padding: 8px;
-      margin: 8px 0;
+      width: 100%; padding: 8px; margin: 6px 0; color: var(--text);
+      background: transparent; border: 1px solid var(--border); border-radius: 6px;
     }
-    textarea { height: 150px; }
+    textarea { height: 140px; }
     button {
-      padding: 8px 14px;
-      margin-right: 5px;
-      cursor: pointer;
+      padding: 6px 12px; margin-right: 6px; cursor: pointer; border-radius: 6px;
+      border: 1px solid var(--border); background: transparent; color: var(--text);
     }
-    .novel {
-      border-top: 1px solid #ccc;
-      padding-top: 10px;
-      margin-top: 15px;
-    }
+    button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .list-item { padding: 8px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .list-item:hover { background: rgba(0,0,0,.04); }
+    body.dark .list-item:hover { background: rgba(255,255,255,.06); }
+    .chapter { padding-left: 16px; color: var(--muted); cursor: pointer; }
+    .chapter:hover { text-decoration: underline; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; }
+    .spacer { height: 12px; }
+    small { color: var(--muted); }
   </style>
 </head>
 <body>
-hello cindy
+hello~歡迎來到這個小說網站
 <div class="container">
-  <h1>小說投稿網站</h1>
+  <div class="toolbar">
+    <h1>小說投稿網站</h1>
+    <button onclick="toggleDark()">🌙 夜間模式</button>
+  </div>
 
-  <input id="title" placeholder="小說標題" />
-  <textarea id="content" placeholder="小說內容"></textarea>
+  <h2>新增小說</h2>
+  <div class="row">
+    <input id="novelTitle" placeholder="小說名稱" />
+    <button class="primary" onclick="addNovel()">新增</button>
+  </div>
 
-  <button onclick="submitNovel()">投稿</button>
-  <button onclick="cancelEdit()" id="cancelBtn" style="display:none">取消編輯</button>
+  <h2>小說列表</h2>
+  <div id="novelList"></div>
 
-  <div id="list"></div>
+  <div class="spacer"></div>
+  <hr />
+
+  <div id="chapterArea" style="display:none">
+    <h2 id="currentNovel"></h2>
+
+    <input id="chapterTitle" placeholder="章節標題（可留空，將自動編號）" />
+    <textarea id="chapterContent" placeholder="章節內容"></textarea>
+
+    <button class="primary" onclick="addChapter()">新增/更新章節</button>
+    <button onclick="cancelEdit()" id="cancelBtn" style="display:none">取消編輯</button>
+
+    <h3>章節列表</h3>
+    <div id="chapterList"></div>
+
+    <div id="viewer"></div>
+  </div>
 </div>
 
 <script>
+  // ====== State ======
   let novels = JSON.parse(localStorage.getItem('novels')) || [];
-  let editIndex = null;
+  let currentNovelIndex = null;
+  let editChapterIndex = null;
 
-  function save() {
-    localStorage.setItem('novels', JSON.stringify(novels));
+  // ====== Utils ======
+  function save() { localStorage.setItem('novels', JSON.stringify(novels)); }
+  function cnNum(n){ const map=['零','一','二','三','四','五','六','七','八','九','十']; if(n<=10) return map[n]; if(n<20) return '十'+map[n-10]; return map[Math.floor(n/10)]+'十'+(n%10?map[n%10]:''); }
+  function chapterName(i, custom){ return custom && custom.trim()? custom : `第${cnNum(i+1)}章`; }
+
+  // ====== Dark Mode ======
+  function applyDark(){ const d = localStorage.getItem('dark')==='1'; document.body.classList.toggle('dark', d); }
+  function toggleDark(){ const d = document.body.classList.toggle('dark'); localStorage.setItem('dark', d?'1':'0'); }
+  applyDark();
+
+  // ====== Novels ======
+  function addNovel(){
+    const title = novelTitle.value.trim(); if(!title) return alert('請輸入小說名稱');
+    novels.push({ title, chapters: [] }); novelTitle.value=''; save(); renderNovels();
   }
-
-  function submitNovel() {
-    const title = document.getElementById('title').value.trim();
-    const content = document.getElementById('content').value.trim();
-
-    if (!title || !content) {
-      alert('請填寫標題與內容');
-      return;
-    }
-
-    if (editIndex === null) {
-      novels.unshift({
-        title,
-        content,
-        time: new Date().toLocaleString()
-      });
-    } else {
-      novels[editIndex].title = title;
-      novels[editIndex].content = content;
-      editIndex = null;
-      document.getElementById('cancelBtn').style.display = 'none';
-    }
-
-    document.getElementById('title').value = '';
-    document.getElementById('content').value = '';
-
-    save();
-    render();
+  function renderNovels(){
+    const list = novelList; list.innerHTML='';
+    novels.forEach((n,i)=>{ const d=document.createElement('div'); d.className='list-item'; d.textContent=n.title; d.onclick=()=>openNovel(i); list.appendChild(d); });
   }
+  function openNovel(i){ currentNovelIndex=i; chapterArea.style.display='block'; currentNovel.innerText=novels[i].title; renderChapters(); viewer.innerHTML=''; }
 
-  function render() {
-    const list = document.getElementById('list');
-    list.innerHTML = '';
-
-    novels.forEach((n, i) => {
-      const div = document.createElement('div');
-      div.className = 'novel';
-      div.innerHTML = `
-        <h3>${n.title}</h3>
-        <small>${n.time}</small>
-        <p>${n.content.replace(/\n/g, '<br>')}</p>
-        <button onclick="editNovel(${i})">編輯</button>
-        <button onclick="deleteNovel(${i})">刪除</button>
-      `;
-      list.appendChild(div);
-    });
+  // ====== Chapters ======
+  function addChapter(){
+    const t = chapterTitle.value.trim(); const c = chapterContent.value.trim(); if(!c) return alert('請填寫內容');
+    const novel = novels[currentNovelIndex];
+    if(editChapterIndex===null){ novel.chapters.push({ title:t, content:c, time:new Date().toLocaleString() }); }
+    else { Object.assign(novel.chapters[editChapterIndex], { title:t, content:c }); editChapterIndex=null; cancelBtn.style.display='none'; }
+    chapterTitle.value=''; chapterContent.value=''; save(); renderChapters();
   }
-
-  function editNovel(index) {
-    const n = novels[index];
-    document.getElementById('title').value = n.title;
-    document.getElementById('content').value = n.content;
-    editIndex = index;
-    document.getElementById('cancelBtn').style.display = 'inline-block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  function renderChapters(){
+    const list = chapterList; list.innerHTML='';
+    const ch = novels[currentNovelIndex].chapters;
+    ch.forEach((c,i)=>{ const d=document.createElement('div'); d.className='chapter'; d.textContent=chapterName(i, c.title); d.onclick=()=>viewChapter(i); list.appendChild(d); });
   }
-
-  function cancelEdit() {
-    editIndex = null;
-    document.getElementById('title').value = '';
-    document.getElementById('content').value = '';
-    document.getElementById('cancelBtn').style.display = 'none';
+  function viewChapter(i){
+    const c = novels[currentNovelIndex].chapters[i];
+    viewer.innerHTML = `<h3>${chapterName(i,c.title)}</h3><small>${c.time}</small><p>${c.content.replace(/\n/g,'<br>')}</p><button onclick="editChapter(${i})">編輯</button><button onclick="deleteChapter(${i})">刪除</button>`;
   }
+  function editChapter(i){ const c=novels[currentNovelIndex].chapters[i]; chapterTitle.value=c.title||''; chapterContent.value=c.content; editChapterIndex=i; cancelBtn.style.display='inline-block'; window.scrollTo({top:0,behavior:'smooth'}); }
+  function cancelEdit(){ editChapterIndex=null; chapterTitle.value=''; chapterContent.value=''; cancelBtn.style.display='none'; }
+  function deleteChapter(i){ if(!confirm('確定刪除章節？')) return; novels[currentNovelIndex].chapters.splice(i,1); save(); viewer.innerHTML=''; renderChapters(); }
 
-  function deleteNovel(index) {
-    if (!confirm('確定刪除？')) return;
-    novels.splice(index, 1);
-    save();
-    render();
-  }
-
-  render();
+  renderNovels();
 </script>
 
 </body>
 </html>
-```</html>
