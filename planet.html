@@ -1,4 +1,24 @@
 <!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<title>Daydream小說</title>
+<style>
+:root{--bg:#f4f4f4;--card:#fff;--text:#111;--muted:#666;--border:#ddd;--accent:#4f46e5}
+body.dark{--bg:#0f1220;--card:#151936;--text:#e8e9ff;--muted:#b6b8ff;--border:#2a2f6b;--accent:#8b8cff}
+body.green{--bg:#eef7f1;--card:#f7fff9;--text:#103b2a;--muted:#3a6b57;--border:#cce3d6;--accent:#2f855a}
+body{background:var(--bg);color:var(--text);font-family:Arial;padding:20px;transition:.2s}
+.container{max-width:1100px;margin:auto}
+.toolbar{display:flex;justify-content:space-between;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:16px}
+.card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);transition:.2s}
+.card:hover{transform:translateY(-4px)}
+.card h3{margin:0;cursor:pointer}
+.card small{color:var(--muted)}
+.chapter{cursor:pointer;color:var(--accent);margin:4px 0}
+.chapter:hover{text-decoration:underline}
+button{border-radius:6px;border:1px solid var(--border);padding:6px 10px;background:transparent;color:var(--text);cursor:pointer}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 input,textarea{width:100%;margin:6px 0;padding:8px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text)}
 textarea{height:120px}
 .viewer{margin-top:10px}
@@ -74,30 +94,4 @@ bookGrid.appendChild(card)
 
 
 function toggleOpen(i){openIndex=openIndex===i?null:i;render()}
-
-
-function renderChapters(container,i){
-const n=novels[i]
-container.innerHTML=`<hr><input placeholder='章節標題（可空）' id='ct${i}'><textarea placeholder='章節內容' id='cc${i}'></textarea><button onclick='addChapter(${i})'>新增章節</button>`
-n.chapters.forEach((c,idx)=>{
-const d=document.createElement('div')
-d.className='chapter'
-d.textContent=chapterName(idx)
-d.onclick=()=>viewChapter(container,i,idx)
-container.appendChild(d)
-})
-}
-
-
-function addChapter(i){const t=document.getElementById('ct'+i).value;const c=document.getElementById('cc'+i).value;if(!c)return alert('請填內容');novels[i].chapters.push({title:t,content:c,time:new Date().toLocaleString()});save();render()}
-
-
-function viewChapter(container,i,idx){const c=novels[i].chapters[idx];const v=document.createElement('div');v.className='viewer';v.innerHTML=`<h4>${chapterName(idx)}</h4><small>${c.time}</small><p>${c.content.replace(/\n/g,'<br>')}</p>`;container.appendChild(v)}
-
-
-render()
-</script>
-
-
-</body>
 </html>
