@@ -2,146 +2,243 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daydream小說書城</title>
 <style>
 :root{--bg:#f4f4f4;--card:#fff;--text:#111;--muted:#666;--border:#ddd;--accent:#4f46e5}
 body.dark{--bg:#0f1220;--card:#151936;--text:#e8e9ff;--muted:#b6b8ff;--border:#2a2f6b;--accent:#8b8cff}
 body.green{--bg:#eef7f1;--card:#f7fff9;--text:#103b2a;--muted:#3a6b57;--border:#cce3d6;--accent:#2f855a}
-body{background:var(--bg);color:var(--text);font-family:Arial;padding:20px;transition:.2s}
-.container{max-width:1100px;margin:auto}
-.toolbar{display:flex;justify-content:space-between;align-items:center}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:16px}
-.card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);transition:.2s}
-.card:hover{transform:translateY(-4px)}
-.card h3{margin:0;cursor:pointer}
+body{background:var(--bg);color:var(--text);font-family: Arial, "Microsoft JhengHei", sans-serif;padding:20px;transition:.2s;line-height:1.6}
+.container{max-width:900px;margin:auto}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom: 20px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px}
+.card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);transition:.2s;position: relative;}
+.card:hover{transform:translateY(-4px);box-shadow: 0 4px 12px rgba(0,0,0,0.1)}
+.card h3{margin:0;display: flex; align-items: center; justify-content: space-between;}
+.card h3 .title-text {cursor:pointer; flex-grow: 1;}
 .card small{color:var(--muted)}
-.chapter{cursor:pointer;color:var(--accent);margin:4px 0}
-.chapter:hover{text-decoration:underline}
-button{border-radius:6px;border:1px solid var(--border);padding:6px 10px;background:transparent;color:var(--text);cursor:pointer}
+.chapter{cursor:pointer;color:var(--accent);margin:8px 0; padding: 8px; border-bottom: 1px dashed var(--border)}
+.chapter:hover{background: rgba(0,0,0,0.05)}
+button{border-radius:6px;border:1px solid var(--border);padding:6px 12px;background:var(--card);color:var(--text);cursor:pointer; font-size: 14px;}
 button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-input,textarea{width:100%;margin:6px 0;padding:8px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text)}
-textarea{height:120px}
-.viewer{margin-top:10px}
-.reading body *{pointer-events:none}
-.reading .viewer{pointer-events:auto}
-.reading .toolbar, .reading input, .reading textarea, .reading button, .reading .chapter{display:none}
+input,textarea{width:100%;margin:6px 0;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);box-sizing: border-box;}
+textarea{height:150px; resize: vertical;}
+.viewer{margin-top:15px; padding: 15px; background: rgba(0,0,0,0.03); border-radius: 8px;}
+.viewer h4 {margin-top: 0;}
+.viewer p {white-space: pre-wrap; word-wrap: break-word;}
 
-.like{cursor:pointer;font-size:18px;margin-left:6px}
-.like.on{color:red}
+/* 閱讀模式限制 */
+body.reading-mode .toolbar, 
+body.reading-mode h2, 
+body.reading-mode .add-section, 
+body.reading-mode .card-controls,
+body.reading-mode .chapter-input-area,
+body.reading-mode .card:not(.active-card) {display:none !important}
 
-.modeBtns button{margin-left:6px}
+body.reading-mode .container {max-width: 800px;}
+body.reading-mode .card.active-card {border: none; background: transparent;}
+.exit-reading {display: none; position: fixed; top: 20px; right: 20px; z-index: 100;}
+body.reading-mode .exit-reading {display: block;}
+
+.like{cursor:pointer;font-size:20px; transition: 0.2s;}
+.like.on{color:#f43f5e}
+.modeBtns button{margin-left:6px; font-size: 18px;}
+.edit-btn {font-size: 12px; opacity: 0.6; cursor: pointer; margin-right: 8px;}
+.edit-btn:hover {opacity: 1;}
 </style>
 </head>
 <body>
 hello~歡迎來到Daydream小說書城
 <div class="container">
+  <button class="exit-reading" onclick="toggleReading()">退出閱讀 📖</button>
+  
   <div class="toolbar">
-    <h1>📚 Daydream小說</h1>
+    <h1>📚 Daydream小說書城</h1>
     <div class="modeBtns">
-      <button onclick="toggleDark()">🌙</button>
-      <button onclick="toggleGreen()">🟢</button>
-      <button onclick="toggleReading()">📖</button>
+      <button onclick="toggleDark()" title="夜間模式">🌙</button>
+      <button onclick="toggleGreen()" title="護眼模式">🟢</button>
+      <button onclick="toggleReading()" title="閱讀模式">📖</button>
     </div>
   </div>
 
-  <h2>➕ 新增小說</h2>
-  <input id="novelTitle" placeholder="小說名稱" />
-  <button class="primary" onclick="addNovel()">新增小說</button>
+  <div class="add-section">
+    <h2>➕ 新增小說</h2>
+    <div style="display: flex; gap: 8px;">
+        <input id="novelTitle" placeholder="請輸入小說名稱..." />
+        <button class="primary" onclick="addNovel()" style="white-space: nowrap;">新增</button>
+    </div>
+  </div>
 
   <div class="grid" id="bookGrid"></div>
 </div>
 
 <script>
-let novels=JSON.parse(localStorage.getItem('novels'))||[]
-let openIndex=null
-let reading=false
+let novels = JSON.parse(localStorage.getItem('novels')) || [];
+let openIndex = null;
 
-const save=()=>localStorage.setItem('novels',JSON.stringify(novels))
-const cn=n=>['零','一','二','三','四','五','六','七','八','九','十'][n]||n
-const chapterName=i=>`第${cn(i+1)}章`
+const save = () => localStorage.setItem('novels', JSON.stringify(novels));
+const cn = n => ['零','一','二','三','四','五','六','七','八','九','十'][n+1] || (n+1);
+const chapterName = i => `第 ${cn(i)} 章`;
 
-function toggleDark(){document.body.classList.toggle('dark');document.body.classList.remove('green');localStorage.setItem('mode','dark')}
-function toggleGreen(){document.body.classList.toggle('green');document.body.classList.remove('dark');localStorage.setItem('mode','green')}
-function toggleReading(){reading=!reading;document.body.classList.toggle('reading',reading)}
+// 初始化主題
+if(localStorage.getItem('mode')==='dark') document.body.classList.add('dark');
+if(localStorage.getItem('mode')==='green') document.body.classList.add('green');
 
-if(localStorage.getItem('mode')==='dark')document.body.classList.add('dark')
-if(localStorage.getItem('mode')==='green')document.body.classList.add('green')
+function toggleDark(){
+    document.body.classList.toggle('dark');
+    document.body.classList.remove('green');
+    localStorage.setItem('mode', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
 
-function addNovel(){const t=novelTitle.value.trim();if(!t)return alert('請輸入名稱');novels.push({title:t,liked:false,chapters:[]});novelTitle.value='';save();render()
+function toggleGreen(){
+    document.body.classList.toggle('green');
+    document.body.classList.remove('dark');
+    localStorage.setItem('mode', document.body.classList.contains('green') ? 'green' : 'light');
+}
+
+function toggleReading(){
+    if(openIndex === null) {
+        alert('請先展開一本小說再進入閱讀模式');
+        return;
+    }
+    document.body.classList.toggle('reading-mode');
+}
+
+function addNovel(){
+    const t = document.getElementById('novelTitle').value.trim();
+    if(!t) return alert('請輸入名稱');
+    novels.push({title:t, liked:false, chapters:[]});
+    document.getElementById('novelTitle').value = '';
+    save();
+    render();
+}
 
 function editNovel(i){
-  const newTitle=prompt('請輸入新的小說名稱',novels[i].title);
-  if(!newTitle)return;
-  novels[i].title=newTitle.trim();
-  save();
-  render();
+    const newTitle = prompt('請輸入新的小說名稱', novels[i].title);
+    if(newTitle === null) return;
+    if(!newTitle.trim()) return alert('名稱不能為空');
+    novels[i].title = newTitle.trim();
+    save();
+    render();
 }
+
+function toggleOpen(i){
+    openIndex = (openIndex === i) ? null : i;
+    render();
 }
 
 function render(){
-  bookGrid.innerHTML=''
-  novels.forEach((n,i)=>{
-    const card=document.createElement('div')
-    card.className='card'
-    card.innerHTML=`<h3><span onclick=\"editNovel(${i})\" title=\"編輯小說名稱\" style=\"cursor:pointer;margin-right:4px;\">✏️</span>${n.title}<span class='like ${n.liked?'on':''}'>❤</span></h3><small>${n.chapters.length} 章</small><div class='content'></div>`
-    card.querySelector('h3').onclick=()=>toggleOpen(i)
-    card.querySelector('.like').onclick=(e)=>{e.stopPropagation();n.liked=!n.liked;save();render()}
-    if(openIndex===i)renderChapters(card.querySelector('.content'),i)
-    bookGrid.appendChild(card)
-  })
+    const grid = document.getElementById('bookGrid');
+    grid.innerHTML = '';
+    novels.forEach((n, i) => {
+        const card = document.createElement('div');
+        card.className = `card ${openIndex === i ? 'active-card' : ''}`;
+        
+        const isLiked = n.liked ? 'on' : '';
+        
+        card.innerHTML = `
+            <h3>
+                <span class="title-text" onclick="toggleOpen(${i})">
+                    ${n.title}
+                </span>
+                <span class="card-controls">
+                    <span class="edit-btn" onclick="editNovel(${i})">✏️</span>
+                    <span class="like ${isLiked}" onclick="toggleLike(event, ${i})">❤</span>
+                </span>
+            </h3>
+            <small>${n.chapters.length} 章節</small>
+            <div class="content" id="content-${i}"></div>
+        `;
+        
+        grid.appendChild(card);
+        if(openIndex === i) renderChapters(document.getElementById(`content-${i}`), i);
+    });
 }
 
-function toggleOpen(i){openIndex=openIndex===i?null:i;render()}
-
-function renderChapters(container,i){
-  const n=novels[i]
-  container.innerHTML=`<hr><input placeholder='章節標題（可空）' id='ct${i}'><textarea placeholder='章節內容' id='cc${i}'></textarea><button onclick='addChapter(${i})'>新增章節</button>`
-  n.chapters.forEach((c,idx)=>{
-    const d=document.createElement('div')
-    d.className='chapter'
-    d.textContent=chapterName(idx)
-    d.onclick=()=>viewChapter(container,i,idx)
-    container.appendChild(d)
-  })
+function toggleLike(e, i) {
+    e.stopPropagation();
+    novels[i].liked = !novels[i].liked;
+    save();
+    render();
 }
 
-function addChapter(i){const t=document.getElementById('ct'+i).value;const c=document.getElementById('cc'+i).value;if(!c)return alert('請填內容');novels[i].chapters.push({title:t,content:c,time:new Date().toLocaleString()});save();render()}
-
-function viewChapter(container,i,idx){
-  const c=novels[i].chapters[idx];
-  container.querySelectorAll('.viewer').forEach(v=>v.remove());
-  const v=document.createElement('div');
-  v.className='viewer';
-  v.innerHTML=`<h4>${chapterName(idx)}</h4>
-  <small>${c.time}</small>
-  <p>${c.content.replace(/
-/g,'<br>')}</p>
-  <button onclick=\"editChapter(${i},${idx})\">✏️ 編輯</button>
-  <button onclick=\"deleteChapter(${i},${idx})\">🗑️ 刪除</button>`;
-  container.appendChild(v)
+function renderChapters(container, i){
+    const n = novels[i];
+    let html = `<hr><div class="chapter-input-area">
+        <input placeholder="章節標題（可選）" id="ct${i}">
+        <textarea placeholder="請在此處輸入章節內容..." id="cc${i}"></textarea>
+        <button class="primary" onclick="addChapter(${i})">發佈章節</button>
+    </div><div id="chapter-list-${i}">`;
+    
+    container.innerHTML = html;
+    
+    const listDiv = document.getElementById(`chapter-list-${i}`);
+    n.chapters.forEach((c, idx) => {
+        const d = document.createElement('div');
+        d.className = 'chapter';
+        d.textContent = c.title ? `${chapterName(idx)}：${c.title}` : chapterName(idx);
+        d.onclick = () => viewChapter(container, i, idx);
+        listDiv.appendChild(d);
+    });
 }
 
-render()
-
-function editChapter(i,idx){
-  if(!confirm('確定要編輯此章節？'))return;
-  openIndex=i;
-  const c=novels[i].chapters[idx];
-  novels[i].chapters.splice(idx,1);
-  save();
-  render();
-  setTimeout(()=>{
-    document.getElementById('ct'+i).value=c.title||'';
-    document.getElementById('cc'+i).value=c.content;
-  },0)
+function addChapter(i){
+    const t = document.getElementById('ct'+i).value.trim();
+    const c = document.getElementById('cc'+i).value.trim();
+    if(!c) return alert('章節內容不能為空');
+    
+    novels[i].chapters.push({
+        title: t,
+        content: c,
+        time: new Date().toLocaleString()
+    });
+    save();
+    render();
 }
 
-function deleteChapter(i,idx){
-  if(!confirm('確定刪除章節？'))return;
-  novels[i].chapters.splice(idx,1);
-  save();
-  render();
+function viewChapter(container, i, idx){
+    const c = novels[i].chapters[idx];
+    // 移除舊的閱讀器
+    const oldViewer = container.querySelector('.viewer');
+    if(oldViewer) oldViewer.remove();
+    
+    const v = document.createElement('div');
+    v.className = 'viewer';
+    const displayTitle = c.title ? `${chapterName(idx)}：${c.title}` : chapterName(idx);
+    
+    v.innerHTML = `
+        <h4>${displayTitle}</h4>
+        <small style="color:var(--muted)">發佈時間：${c.time}</small>
+        <p>${c.content}</p>
+        <div class="card-controls" style="margin-top:20px; display:flex; gap:10px;">
+            <button onclick="editChapter(${i}, ${idx})">✏️ 編輯內容</button>
+            <button onclick="deleteChapter(${i}, ${idx})" style="color:red">🗑️ 刪除章節</button>
+        </div>
+    `;
+    container.appendChild(v);
+    v.scrollIntoView({behavior: 'smooth'});
 }
+
+function editChapter(i, idx){
+    const c = novels[i].chapters[idx];
+    const newContent = prompt('編輯章節內容：', c.content);
+    if(newContent === null) return;
+    
+    novels[i].chapters[idx].content = newContent;
+    novels[i].chapters[idx].time = new Date().toLocaleString() + " (已編輯)";
+    save();
+    render();
+}
+
+function deleteChapter(i, idx){
+    if(!confirm('確定要永久刪除此章節嗎？')) return;
+    novels[i].chapters.splice(idx, 1);
+    save();
+    render();
+}
+
+// 初始渲染
+render();
 </script>
 
 </body>
