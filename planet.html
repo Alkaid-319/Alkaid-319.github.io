@@ -25,7 +25,7 @@ input,textarea{width:100%;margin:6px 0;padding:10px;border-radius:6px;border:1px
 textarea{height:150px; resize: vertical;}
 .viewer{margin-top:15px; padding: 15px; background: rgba(0,0,0,0.03); border-radius: 8px;}
 .viewer h4 {margin-top: 0;}
-.viewer p {white-space: pre-wrap; word-wrap: break-word;}
+.viewer p {white-space: pre-wrap; word-wrap: break-word; font-size: 16px;}
 
 /* 閱讀模式限制 */
 body.reading-mode .toolbar, 
@@ -40,16 +40,21 @@ body.reading-mode .card.active-card {border: none; background: transparent;}
 .exit-reading {display: none; position: fixed; top: 20px; right: 20px; z-index: 100;}
 body.reading-mode .exit-reading {display: block;}
 
+/* 字體調節工具 - 僅在閱讀模式 */
+.font-controls { display: none; gap: 10px; align-items: center; margin-bottom: 15px; }
+body.reading-mode .font-controls { display: flex; }
+
 .like{cursor:pointer;font-size:20px; transition: 0.2s;}
 .like.on{color:#f43f5e}
 .modeBtns button{margin-left:6px; font-size: 18px;}
-.edit-btn {font-size: 12px; opacity: 0.6; cursor: pointer; margin-right: 8px;}
-.edit-btn:hover {opacity: 1;}
+.edit-btn, .del-btn {font-size: 12px; opacity: 0.6; cursor: pointer; margin-left: 8px;}
+.edit-btn:hover, .del-btn:hover {opacity: 1;}
+.del-btn {color: #ff4d4d;}
+.editing-active { border: 2px solid var(--accent) !important; box-shadow: 0 0 10px rgba(79, 70, 229, 0.2); }
 </style>
 </head>
 <body>
-<p>hello~歡迎來到Daydream小說書城</p>
-  
+hello~歡迎來到Daydream小說書城
 <div class="container">
   <button class="exit-reading" onclick="toggleReading()">退出閱讀 📖</button>
   
@@ -60,6 +65,12 @@ body.reading-mode .exit-reading {display: block;}
       <button onclick="toggleGreen()" title="護眼模式">🟢</button>
       <button onclick="toggleReading()" title="閱讀模式">📖</button>
     </div>
+  </div>
+
+  <div class="font-controls">
+    <span>字體大小：</span>
+    <button onclick="changeFontSize(-2)">A-</button>
+    <button onclick="changeFontSize(2)">A+</button>
   </div>
 
   <div class="add-section">
@@ -76,6 +87,7 @@ body.reading-mode .exit-reading {display: block;}
 <script>
 let novels = JSON.parse(localStorage.getItem('novels')) || [];
 let openIndex = null;
+let currentFontSize = 16;
 
 const save = () => localStorage.setItem('novels', JSON.stringify(novels));
 const cn = n => ['零','一','二','三','四','五','六','七','八','九','十'][n+1] || (n+1);
@@ -105,6 +117,13 @@ function toggleReading(){
     document.body.classList.toggle('reading-mode');
 }
 
+// 2. 字體大小調節
+function changeFontSize(delta) {
+    currentFontSize += delta;
+    const viewerP = document.querySelector('.viewer p');
+    if(viewerP) viewerP.style.fontSize = currentFontSize + 'px';
+}
+
 function addNovel(){
     const t = document.getElementById('novelTitle').value.trim();
     if(!t) return alert('請輸入名稱');
@@ -114,13 +133,25 @@ function addNovel(){
     render();
 }
 
-function editNovel(i){
+function editNovel(e, i){
+    e.stopPropagation();
     const newTitle = prompt('請輸入新的小說名稱', novels[i].title);
     if(newTitle === null) return;
     if(!newTitle.trim()) return alert('名稱不能為空');
     novels[i].title = newTitle.trim();
     save();
     render();
+}
+
+// 1. 刪除小說
+function deleteNovel(e, i) {
+    e.stopPropagation();
+    if(confirm(`確定要永久刪除《${novels[i].title}》嗎？`)) {
+        novels.splice(i, 1);
+        if(openIndex === i) openIndex = null;
+        save();
+        render();
+    }
 }
 
 function toggleOpen(i){
@@ -143,7 +174,8 @@ function render(){
                     ${n.title}
                 </span>
                 <span class="card-controls">
-                    <span class="edit-btn" onclick="editNovel(${i})">✏️</span>
+                    <span class="edit-btn" onclick="editNovel(event, ${i})">✏️</span>
+                    <span class="del-btn" onclick="deleteNovel(event, ${i})">🗑️</span>
                     <span class="like ${isLiked}" onclick="toggleLike(event, ${i})">❤</span>
                 </span>
             </h3>
@@ -168,7 +200,7 @@ function renderChapters(container, i){
     let html = `<hr><div class="chapter-input-area">
         <input placeholder="章節標題（可選）" id="ct${i}">
         <textarea placeholder="請在此處輸入章節內容..." id="cc${i}"></textarea>
-        <button class="primary" onclick="addChapter(${i})">發佈章節</button>
+        <button class="primary" id="pubBtn${i}" onclick="addChapter(${i})">發佈章節</button>
     </div><div id="chapter-list-${i}">`;
     
     container.innerHTML = html;
@@ -199,7 +231,6 @@ function addChapter(i){
 
 function viewChapter(container, i, idx){
     const c = novels[i].chapters[idx];
-    // 移除舊的閱讀器
     const oldViewer = container.querySelector('.viewer');
     if(oldViewer) oldViewer.remove();
     
@@ -210,7 +241,7 @@ function viewChapter(container, i, idx){
     v.innerHTML = `
         <h4>${displayTitle}</h4>
         <small style="color:var(--muted)">發佈時間：${c.time}</small>
-        <p>${c.content}</p>
+        <p style="font-size:${currentFontSize}px">${c.content}</p>
         <div class="card-controls" style="margin-top:20px; display:flex; gap:10px;">
             <button onclick="editChapter(${i}, ${idx})">✏️ 編輯內容</button>
             <button onclick="deleteChapter(${i}, ${idx})" style="color:red">🗑️ 刪除章節</button>
@@ -220,15 +251,40 @@ function viewChapter(container, i, idx){
     v.scrollIntoView({behavior: 'smooth'});
 }
 
+// 4. 優化編輯章節邏輯 (改用編輯器而非 prompt)
 function editChapter(i, idx){
     const c = novels[i].chapters[idx];
-    const newContent = prompt('編輯章節內容：', c.content);
-    if(newContent === null) return;
+    const titleInput = document.getElementById('ct'+i);
+    const contentTextarea = document.getElementById('cc'+i);
+    const pubBtn = document.getElementById('pubBtn'+i);
+
+    // 填回資料
+    titleInput.value = c.title;
+    contentTextarea.value = c.content;
     
-    novels[i].chapters[idx].content = newContent;
-    novels[i].chapters[idx].time = new Date().toLocaleString() + " (已編輯)";
-    save();
-    render();
+    // UI 高亮與捲動
+    contentTextarea.classList.add('editing-active');
+    titleInput.focus();
+    titleInput.scrollIntoView({behavior: 'smooth'});
+
+    // 暫時修改按鈕功能
+    pubBtn.textContent = "💾 儲存修改";
+    pubBtn.classList.remove('primary');
+    pubBtn.style.background = "#22c55e"; // 綠色表示儲存
+    pubBtn.style.color = "#fff";
+    
+    pubBtn.onclick = function() {
+        const nt = titleInput.value.trim();
+        const nc = contentTextarea.value.trim();
+        if(!nc) return alert('內容不能為空');
+        
+        novels[i].chapters[idx].title = nt;
+        novels[i].chapters[idx].content = nc;
+        novels[i].chapters[idx].time = new Date().toLocaleString() + " (已編輯)";
+        
+        save();
+        render();
+    };
 }
 
 function deleteChapter(i, idx){
@@ -238,7 +294,6 @@ function deleteChapter(i, idx){
     render();
 }
 
-// 初始渲染
 render();
 </script>
 
