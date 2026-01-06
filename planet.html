@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📚Daydream小說書城</title>
+    <title>📚 Daydream小說書城</title>
     <style>
         :root{--bg:#f4f4f4;--card:#fff;--text:#111;--muted:#666;--border:#ddd;--accent:#4f46e5;--success:#22c55e}
         body.dark{--bg:#0f1220;--card:#151936;--text:#e8e9ff;--muted:#b6b8ff;--border:#2a2f6b;--accent:#8b8cff}
@@ -12,57 +12,20 @@
         body{background:var(--bg);color:var(--text);font-family: Arial, "Microsoft JhengHei", sans-serif;transition:.2s;line-height:1.6;margin:0}
         .container{max-width:900px;margin:auto;padding:20px}
         
-        /* 導覽分頁 */
+        /* 導覽 */
         .nav-tabs {display: flex; gap: 20px; border-bottom: 2px solid var(--border); margin-bottom: 20px;}
         .nav-link {padding: 10px 20px; cursor: pointer; font-weight: bold; color: var(--muted); border-bottom: 3px solid transparent;}
         .nav-link.active {color: var(--accent); border-bottom-color: var(--accent);}
 
-        /* 使用者列 */
         .user-bar{display:none; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:10px; font-size:14px}
         .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom: 20px;}
         
-        /* 卡片佈局 */
-        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px}
-        .card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);transition:.2s;position: relative;}
-        .card:hover{transform:translateY(-4px);box-shadow: 0 4px 12px rgba(0,0,0,0.1)}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+        .card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);transition:.2s;}
         
-        /* 按鈕與輸入 */
-        button{border-radius:6px;border:1px solid var(--border);padding:8px 15px;background:var(--card);color:var(--text);cursor:pointer; font-size: 14px;}
-        button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-        input,textarea{width:100%;margin:6px 0;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);box-sizing: border-box;}
-        
-        /* 登入註冊彈窗 */
-        #authOverlay{position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);}
-        .auth-card{width:320px; background:var(--card); padding:30px; border-radius:15px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
-        
-        .hidden {display: none !important;}
-        .public-badge {background: var(--accent); color: white; font-size: 11px; padding: 2px 8px; border-radius: 20px;}
-    </style>
-</head>
-<body>
-hello~歡迎來到Daydream小說書城
-<div id="authOverlay">
-    <div class="auth-card">
-        <h2 id="authTitle">🔑 歡迎回來</h2>
-        <p id="authSub" style="color:var(--muted); font-size:14px;">請輸入帳號密碼開啟創作空間</p>
-        <input id="username" placeholder="使用者名稱" />
-        <input id="password" type="password" placeholder="密碼" />
-        <button class="primary" style="width:100%; margin-top:15px; padding:12px; font-weight:bold;" onclick="handleAuth()">進入書城</button>
-        <div style="margin-top:20px; font-size:13px; color:var(--muted);">
-            <span id="authSwitchText">還沒有帳號？</span>
-            <span style="color:var(--accent); cursor:pointer; font-weight:bold;" onclick="toggleAuthMode()" id="toggleAuthBtn">立即註冊</span>
-        </div>
-    </div>
-</div>
-
-<div class="container">
-    <div class="user-bar" id="userBar">
-        <span id="welcomeMsg" style="font-weight:bold;"></span>
-        <button onclick="logout()">安全登出</button>
-    </div>
-
-    <div class="toolbar">
-        <h1>📚 Daydream首頁</h1>
+        /* 編輯器樣式 */
+        .editor-zone { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 20px; }
+        .chapter-item { background: rgba(0,0,0,0.03); padding首頁</h1>
         <div class="modeBtns">
             <button onclick="setTheme('dark')">🌙</button>
             <button onclick="setTheme('green')">🟢</button>
@@ -70,164 +33,100 @@ hello~歡迎來到Daydream小說書城
         </div>
     </div>
 
+    </div>
+
     <div class="nav-tabs" id="mainNav" style="display:none;">
-        <div class="nav-link active" id="tab-market" onclick="switchTab('market')">🌎 廣場首頁</div>
+        <div class="nav-link active" id="tab-market" onclick="switchTab('market')">🌎 作品廣場</div>
         <div class="nav-link" id="tab-my" onclick="switchTab('my')">✍️ 我的創作</div>
     </div>
 
     <div id="page-market" class="hidden">
-        <div style="background:var(--card); padding:20px; border-radius:12px; border:1px dashed var(--accent); margin-bottom:20px;">
-            <h4 style="margin-top:0;">📥 導入作品碼</h4>
-            <input id="importCode" placeholder="貼上朋友分享的作品代碼..." />
-            <button class="primary" onclick="importNovel()">確認導入</button>
+        <div style="margin-bottom:20px; border:1px dashed var(--accent); padding:15px; border-radius:10px;">
+            <h4>📥 導入代碼</h4>
+            <input id="importCode" placeholder="貼上作品代碼..." />
+            <button onclick="importNovel()">導入</button>
         </div>
         <div class="grid" id="marketGrid"></div>
+        <div id="marketViewer" class="viewer hidden"></div>
     </div>
 
     <div id="page-my" class="hidden">
-        <div style="margin-bottom:20px;">
+        <div id="my-list-view">
             <h2>➕ 新增作品</h2>
-            <div style="display: flex; gap: 8px;">
-                <input id="novelTitle" placeholder="這本書的名字是..." />
-                <button class="primary" onclick="addNovel()">創建作品</button>
+            <div style="display: flex; gap: 8px; margin-bottom:20px;">
+                <input id="novelTitle" placeholder="書名..." />
+                <button class="primary" onclick="addNovel()">創建</button>
+                  <div class="grid" id="myGrid"></div>
+        </div>
+
+        <div id="my-editor-view" class="hidden">
+            <button onclick="exitEditor()">⬅️ 返回清單</button>
+            <div class="editor-zone">
+                <h2 id="editingNovelName"></h2>
+                <input id="chapterTitle" placeholder="章節標題">
+                <textarea id="chapterContent" placeholder="在此輸入內容... (系統會自動暫存草稿)"></textarea>
+                <button class="primary" id="saveBtn" onclick="saveChapter()">發佈/更新章節</button>
+                <hr>
+                <h4>章節清單</h4>
+                <div id="chapterList"></div>
             </div>
         </div>
-        <div class="grid" id="myGrid"></div>
     </div>
 </div>
 
 <script>
-// --- 全域變數 ---
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let isSignUpMode = false;
 let myNovels = [];
-let marketNovels = JSON.parse(localStorage.getItem('marketNovels')) || [];
+let editingIndex = null;
+let editingChapterIdx = null;
 
-// --- 1. 登入註冊邏輯 ---
+// --- 登入註冊 ---
 function toggleAuthMode() {
     isSignUpMode = !isSignUpMode;
-    document.getElementById('authTitle').innerText = isSignUpMode ? "📝 創作者註冊" : "🔑 歡迎回來";
-    document.getElementById('authSub').innerText = isSignUpMode ? "註冊後資料將儲存在此瀏覽器" : "請輸入帳號密碼開啟創作空間";
-    document.getElementById('authSwitchText').innerText = isSignUpMode ? "已經有帳號？" : "還沒有帳號？";
-    document.getElementById('toggleAuthBtn').innerText = isSignUpMode ? "點此登入" : "立即註冊";
+    document.getElementById('authTitle').innerText = isSignUpMode ? "📝 創作者註冊" : "🔑 創作者登入";
+    document.getElementById('toggleAuthBtn').innerText = isSignUpMode ? "已有帳號？點此登入" : "還沒有帳號？立即註冊";
 }
 
 function handleAuth() {
     const u = document.getElementById('username').value.trim();
     const p = document.getElementById('password').value.trim();
-    if(!u || !p) return alert('請填寫帳號與密碼');
-
     let users = JSON.parse(localStorage.getItem('users')) || {};
-
     if(isSignUpMode) {
-        // 註冊
-        if(users[u]) return alert('此名稱已被使用，請換一個');
+        if(users[u]) return alert('帳號已存在');
         users[u] = { password: p, data: [] };
         localStorage.setItem('users', JSON.stringify(users));
-        alert('註冊成功！請重新登入');
-        toggleAuthMode();
+        alert('註冊成功！請登入'); toggleAuthMode();
     } else {
-        // 登入
         if(users[u] && users[u].password === p) {
             currentUser = u;
             localStorage.setItem('currentUser', JSON.stringify(u));
             initApp();
-        } else {
-            alert('帳號或密碼錯誤');
-        }
+        } else { alert('帳密錯誤'); }
     }
 }
 
-function logout() {
-    localStorage.removeItem('currentUser');
-    location.reload();
-}
-
-// --- 2. 初始化應用 ---
 function initApp() {
     if(!currentUser) return;
     document.getElementById('authOverlay').style.display = 'none';
     document.getElementById('userBar').style.display = 'flex';
     document.getElementById('mainNav').style.display = 'flex';
     document.getElementById('welcomeMsg').innerText = `你好，${currentUser}`;
-    
-    // 讀取該使用者的作品
     const users = JSON.parse(localStorage.getItem('users'));
     myNovels = users[currentUser].data || [];
-    
-    switchTab('market'); // 預設首頁
+    switchTab('market');
 }
 
-// --- 3. 頁面切換 ---
+// --- 分頁切換 ---
 function switchTab(tab) {
     document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
     document.getElementById(`tab-${tab}`).classList.add('active');
-    
-    if(tab === 'market') {
-        document.getElementById('page-market').classList.remove('hidden');
-        document.getElementById('page-my').classList.add('hidden');
-        renderMarket();
-    } else {
-        document.getElementById('page-market').classList.add('hidden');
-        document.getElementById('page-my').classList.remove('hidden');
-        renderMy();
-    }
+    document.getElementById('page-market').className = tab==='market' ? '' : 'hidden';
+    document.getElementById('page-my').className = tab==='my' ? '' : 'hidden';
+    if(tab === 'market') renderMarket(); else renderMy();
 }
 
-// --- 4. 廣場與分享邏輯 ---
-function renderMarket() {
-    const grid = document.getElementById('marketGrid');
-    grid.innerHTML = '';
-    if(marketNovels.length === 0) {
-        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px;">尚未導入任何外部作品。</div>';
-    }
-    marketNovels.forEach((n, i) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-            <h3>${n.title} <span class="public-badge">${n.author}</span></h3>
-            <p style="font-size:12px;">章節數：${n.chapters.length}</p>
-            <button onclick="alert('閱讀功能開發中，目前僅供導入展示')">閱讀內容</button>
-            <button style="color:red; border:none; margin-top:10px;" onclick="removeMarket(${i})">移除</button>
-        `;
-        grid.appendChild(card);
-    });
-}
-
-function shareNovel(i) {
-    const n = myNovels[i];
-    const exportData = {
-        title: n.title,
-        author: currentUser,
-        chapters: n.chapters
-    };
-    // 將 JSON 轉為 Base64 方便傳遞
-    const code = btoa(unescape(encodeURIComponent(JSON.stringify(exportData))));
-    prompt('這是這部小說的「作品代碼」，複製發給朋友後，他們可以在廣場導入：', code);
-}
-
-function importNovel() {
-    const code = document.getElementById('importCode').value.trim();
-    if(!code) return;
-    try {
-        const decoded = JSON.parse(decodeURIComponent(escape(atob(code))));
-        marketNovels.push(decoded);
-        localStorage.setItem('marketNovels', JSON.stringify(marketNovels));
-        document.getElementById('importCode').value = '';
-        alert(`成功導入《${decoded.title}》！`);
-        renderMarket();
-    } catch(e) {
-        alert('無效的作品代碼！');
-    }
-}
-
-function removeMarket(i) {
-    marketNovels.splice(i, 1);
-    localStorage.setItem('marketNovels', JSON.stringify(marketNovels));
-    renderMarket();
-}
-
-// --- 5. 個人創作邏輯 ---
+// --- 我的創作：編輯功能 ---
 function renderMy() {
     const grid = document.getElementById('myGrid');
     grid.innerHTML = '';
@@ -236,44 +135,143 @@ function renderMy() {
         card.className = 'card';
         card.innerHTML = `
             <h3>${n.title}</h3>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-                <button onclick="shareNovel(${i})">📤 分享作品代碼</button>
-                <button class="primary" onclick="alert('編輯器可沿用前版邏輯開發')">📝 編輯作品</button>
-                <button style="color:red;" onclick="deleteMy(${i})">🗑️ 刪除作品</button>
-            </div>
+            <button class="primary" onclick="enterEditor(${i})">📝 編輯章節</button>
+            <button onclick="shareNovel(${i})">📤 分享</button>
+            <button style="color:red; border:none;" onclick="deleteNovel(${i})">🗑️ 刪除</button>
         `;
         grid.appendChild(card);
     });
+}
+
+function enterEditor(i) {
+    editingIndex = i;
+    editingChapterIdx = null;
+    document.getElementById('my-list-view').classList.add('hidden');
+    document.getElementById('my-editor-view').classList.remove('hidden');
+    document.getElementById('editingNovelName').innerText = `正在編輯：《${myNovels[i].title}》`;
+    document.getElementById('chapterTitle').value = '';
+    document.getElementById('chapterContent').value = '';
+    renderChapterList();
+}
+
+function exitEditor() {
+    editingIndex = null;
+    document.getElementById('my-list-view').classList.remove('hidden');
+    document.getElementById('my-editor-view').classList.add('hidden');
+    renderMy();
+}
+
+function renderChapterList() {
+    const list = document.getElementById('chapterList');
+    list.innerHTML = '';
+    myNovels[editingIndex].chapters.forEach((c, idx) => {
+        const div = document.createElement('div');
+        div.className = 'chapter-item';
+        div.innerHTML = `<span>第 ${idx+1} 章：${c.title}</span> 
+                         <div><button onclick="editSpecificChapter(${idx})">改</button>
+                         <button onclick="deleteChapter(${idx})">刪</button></div>`;
+        list.appendChild(div);
+    });
+}
+
+function saveChapter() {
+    const t = document.getElementById('chapterTitle').value.trim();
+    const c = document.getElementById('chapterContent').value.trim();
+    if(!c) return alert('內容不能為空');
+
+    if(editingChapterIdx !== null) {
+        myNovels[editingIndex].chapters[editingChapterIdx] = { title: t, content: c };
+    } else {
+        myNovels[editingIndex].chapters.push({ title: t, content: c });
+    }
+    
+    saveToStorage();
+    editingChapterIdx = null;
+    document.getElementById('chapterTitle').value = '';
+    document.getElementById('chapterContent').value = '';
+    document.getElementById('saveBtn').innerText = "發佈/更新章節";
+    renderChapterList();
+}
+
+function editSpecificChapter(idx) {
+    editingChapterIdx = idx;
+    const c = myNovels[editingIndex].chapters[idx];
+    document.getElementById('chapterTitle').value = c.title;
+    document.getElementById('chapterContent').value = c.content;
+    document.getElementById('saveBtn').innerText = "💾 儲存修改";
+}
+
+function deleteChapter(idx) {
+    if(confirm('確定刪除章節？')) {
+        myNovels[editingIndex].chapters.splice(idx, 1);
+        saveToStorage();
+        renderChapterList();
+    }
+}
+
+// --- 工具 ---
+function saveToStorage() {
+    let users = JSON.parse(localStorage.getItem('users'));
+    users[currentUser].data = myNovels;
+    localStorage.setItem('users', JSON.stringify(users));
 }
 
 function addNovel() {
     const t = document.getElementById('novelTitle').value.trim();
     if(!t) return;
     myNovels.push({ title: t, chapters: [] });
-    saveMyData();
+    saveToStorage();
     renderMy();
     document.getElementById('novelTitle').value = '';
 }
 
-function saveMyData() {
-    let users = JSON.parse(localStorage.getItem('users'));
-    users[currentUser].data = myNovels;
-    localStorage.setItem('users', JSON.stringify(users));
+function deleteNovel(i) {
+    if(confirm('刪除整部作品？')) { myNovels.splice(i, 1); saveToStorage(); renderMy(); }
 }
 
-function deleteMy(i) {
-    if(confirm('確定要永久刪除這部作品嗎？')) {
-        myNovels.splice(i, 1);
-        saveMyData();
-        renderMy();
-    }
+function shareNovel(i) {
+    const n = myNovels[i];
+    const code = btoa(unescape(encodeURIComponent(JSON.stringify({title: n.title, author: currentUser, chapters: n.chapters}))));
+    prompt('分享代碼：', code);
 }
 
-function setTheme(m) { document.body.className = (m === 'light') ? '' : m; }
+function importNovel() {
+    const code = document.getElementById('importCode').value.trim();
+    if(!code) return;
+    try {
+        const data = JSON.parse(decodeURIComponent(escape(atob(code))));
+        let market = JSON.parse(localStorage.getItem('marketNovels')) || [];
+        market.push(data);
+        localStorage.setItem('marketNovels', JSON.stringify(market));
+        renderMarket();
+    } catch(e) { alert('代碼錯誤'); }
+}
 
-// --- 啟動初始化 ---
+function renderMarket() {
+    const grid = document.getElementById('marketGrid');
+    grid.innerHTML = '';
+    const market = JSON.parse(localStorage.getItem('marketNovels')) || [];
+    market.forEach((n, i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<h3>${n.title}</h3><small>作者: ${n.author}</small><br>
+                         <button onclick="readMarket(${i})">觀看</button>`;
+        grid.appendChild(card);
+    });
+}
+
+function readMarket(i) {
+    const n = (JSON.parse(localStorage.getItem('marketNovels')))[i];
+    const viewer = document.getElementById('marketViewer');
+    viewer.classList.remove('hidden');
+    viewer.innerHTML = `<h2>${n.title}</h2>` + n.chapters.map(c => `<h4>${c.title}</h4><p>${c.content}</p>`).join('<hr>');
+    viewer.scrollIntoView();
+}
+
+function logout() { localStorage.removeItem('currentUser'); location.reload(); }
+function setTheme(m) { document.body.className = m==='light'?'':m; }
+
 if(currentUser) initApp();
 </script>
-
 </body>
 </html>
