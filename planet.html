@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📚 Daydream小說書城</title>
-    <style>:
-        root{--bg:#f4f4f4;--card:#fff;--text:#111;--muted:#666;--border:#ddd;--accent:#4f46e5;--success:#22c55e}
+    <style>
+        :root{--bg:#f4f4f4;--card:#fff;--text:#111;--muted:#666;--border:#ddd;--accent:#4f46e5;--success:#22c55e}
         body.dark{--bg:#0f1220;--card:#151936;--text:#e8e9ff;--muted:#b6b8ff;--border:#2a2f6b;--accent:#8b8cff}
         body.green{--bg:#eef7f1;--card:#f7fff9;--text:#103b2a;--muted:#3a6b57;--border:#cce3d6;--accent:#2f855a}
         
@@ -25,14 +25,45 @@
         
         /* 編輯器樣式 */
         .editor-zone { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 20px; }
-        .chapter-item { background: rgba(0,0,0,0.03); padding首頁</h1>
+        .chapter-item { background: rgba(0,0,0,0.03); padding: 10px; margin: 5px 0; cursor: pointer; border-radius: 6px; display: flex; justify-content: space-between; }
+        .chapter-item:hover { background: rgba(79, 70, 229, 0.1); }
+        
+        button{border-radius:6px;border:1px solid var(--border);padding:8px 15px;background:var(--card);color:var(--text);cursor:pointer; font-size: 14px;}
+        button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+        input,textarea{width:100%;margin:6px 0;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);box-sizing: border-box;}
+        textarea{height:200px; line-height: 1.8;}
+
+        #authOverlay{position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);}
+        .auth-card{width:320px; background:var(--card); padding:30px; border-radius:15px; text-align:center;}
+        .hidden {display: none !important;}
+        .viewer { background: rgba(0,0,0,0.02); padding: 20px; border-radius: 8px; margin-top: 15px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+hello~歡迎來到Daydream小說書城
+<div id="authOverlay">
+    <div class="auth-card">
+        <h2 id="authTitle">🔑 創作者登入</h2>
+        <input id="username" placeholder="使用者名稱" />
+        <input id="password" type="password" placeholder="密碼" />
+        <button class="primary" style="width:100%; margin-top:15px;" onclick="handleAuth()">進入系統</button>
+        <p style="margin-top:15px; font-size:13px; cursor:pointer; color:var(--accent)" onclick="toggleAuthMode()" id="toggleAuthBtn">還沒有帳號？立即註冊</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="user-bar" id="userBar">
+        <span id="welcomeMsg"></span>
+        <button onclick="logout()">登出</button>
+    </div>
+
+    <div class="toolbar">
+首頁        <h1>📚 Daydream首頁 Da
         <div class="modeBtns">
             <button onclick="setTheme('dark')">🌙</button>
             <button onclick="setTheme('green')">🟢</button>
             <button onclick="setTheme('light')">☀️</button>
         </div>
-    </div>
-
     </div>
 
     <div class="nav-tabs" id="mainNav" style="display:none;">
@@ -56,7 +87,8 @@
             <div style="display: flex; gap: 8px; margin-bottom:20px;">
                 <input id="novelTitle" placeholder="書名..." />
                 <button class="primary" onclick="addNovel()">創建</button>
-                  <div class="grid" id="myGrid"></div>
+            </div>
+            <div class="grid" id="myGrid"></div>
         </div>
 
         <div id="my-editor-view" class="hidden">
